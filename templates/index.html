@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ request.title }}</title>
+  <link rel="stylesheet" href="/static/styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <header>
+    <h1>{{ request.Title }}</h1>
+    <p>Release Year: {{ request.Year }} | IMDb Rating: {{ request.imdbRating }} | Voters count: {{ request.imdbVotes }}</p>
+  </header>
+
+
+  <div class="container">
+    <div class="poster-plot">
+      <img src="{{ request.Poster }}" alt="Movie Poster" class="poster">
+      <div class="plot">
+        <h2>Plot</h2>
+        <p>{{ request.Plot }}</p>
+      </div>
+    </div>
+
+    <hr>
+
+    <div class="reviews">
+      <h2>Reviews</h2>
+      <main>
+        {% for item in request.reviews %}
+        <div class="review {{ item.sentiment }}">
+          <p>{{ item.text }}</p>
+          <span class="sentiment">{{ item.sentiment }}</span>
+        </div>
+        {% endfor %}
+
+        <hr>
+
+        <section>
+          <h2>Audience Sentiment</h2>
+          <canvas class="chart-container" style="width: 50%;" id="pieChart"></canvas>
+        </section>
+      </main>
+      <!-- Add more reviews in a similar format -->
+    </div>
+  </div>
+
+  <script>
+    // Pass the sentiment_summary data from the request to a JavaScript variable
+    const sentimentData = {{ request.sentiment_summary | tojson }};
+  
+    // Extract values for the pie chart
+    const data = {
+        labels: ['Positive', 'Neutral', 'Negative'],
+        datasets: [{
+            label: 'Reviews Sentiment',
+            data: [sentimentData.positive, sentimentData.neutral, sentimentData.negative], // Use data from the request
+            backgroundColor: ['#36a2eb', '##787878', '#ff6384'],
+            hoverOffset: 4
+        }]
+    };
+  
+    // Configuration for the pie chart
+    const config = {
+        type: 'pie',
+        data: data,
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'top',
+                },
+            }
+        }
+    };
+  
+    // Render the chart
+    const pieChart = new Chart(
+        document.getElementById('pieChart'),
+        config
+    );
+  </script>
+
+  <footer>
+    <p>Created by <a href="https://github.com/elias-ebrahimpour/" target="_blank">Gravitropism</a> | <a href="https://www.imdb.com/title/{{ request.imdbID }}/" target="_blank">View on IMDb</a></p>
+  </footer>
+</body>
+</html>
